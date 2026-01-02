@@ -61,4 +61,90 @@
       padding: 18px 30px;
       text-align: center;
       font-size: 28px;
-      background: rgba(
+      background: rgba(0,0,0,0.18);
+      backdrop-filter: blur(6px);
+      border-top: 1px solid rgba(255,255,255,0.08);
+    }
+
+    /* YANIP SÖNME */
+    @keyframes pulse {
+      0% { opacity: 1; }
+      50% { opacity: 0.4; }
+      100% { opacity: 1; }
+    }
+
+    .active {
+      animation: pulse 1.2s ease-in-out infinite;
+      color: #ffd166;
+      font-weight: 600;
+    }
+  </style>
+</head>
+
+<body>
+
+  <img src="logo.png" class="logo" alt="Porto Bello Hotel">
+
+  <div id="clock"></div>
+  <div id="date"></div>
+
+  <div id="ticker">
+    <span id="breakfast">🍳 Breakfast 07:00–10:00</span> |
+    <span id="lunch">🍽️ Lunch 12:30–14:30</span> |
+    <span id="dinner">🍷 Dinner 19:00–21:30</span> |
+    <span id="show">🎉 Animation Show 21:00</span>
+  </div>
+
+  <script>
+    function updateTime() {
+      const now = new Date();
+
+      document.getElementById("clock").textContent =
+        now.toLocaleTimeString("en-GB", { hour12: false });
+
+      document.getElementById("date").textContent =
+        now.toLocaleDateString("en-GB", {
+          weekday: "long",
+          day: "numeric",
+          month: "long",
+          year: "numeric"
+        });
+
+      highlightActive(now);
+    }
+
+    function clearAll() {
+      ["breakfast","lunch","dinner","show"].forEach(id =>
+        document.getElementById(id).classList.remove("active")
+      );
+    }
+
+    function highlightActive(now) {
+      clearAll();
+
+      const h = now.getHours();
+      const m = now.getMinutes();
+
+      if (h >= 7 && (h < 10 || (h === 10 && m === 0))) {
+        document.getElementById("breakfast").classList.add("active");
+      }
+
+      if ((h === 12 && m >= 30) || (h === 13) || (h === 14 && m <= 30)) {
+        document.getElementById("lunch").classList.add("active");
+      }
+
+      if (h >= 19 && (h < 21 || (h === 21 && m <= 30))) {
+        document.getElementById("dinner").classList.add("active");
+      }
+
+      if ((h === 20 && m >= 50) || (h === 21 && m <= 10)) {
+        document.getElementById("show").classList.add("active");
+      }
+    }
+
+    updateTime();
+    setInterval(updateTime, 1000);
+  </script>
+
+</body>
+</html>
