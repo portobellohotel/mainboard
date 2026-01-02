@@ -23,41 +23,63 @@
       justify-content: center;
     }
 
-    /* 1️⃣ LOGO – SOL ÜST (zarif) */
+    /* LOGO – sol üst */
     .logo {
       position: absolute;
       top: 30px;
       left: 30px;
-      width: 190px;      /* biraz daha zarif */
-      opacity: 0.9;      /* premium hissi */
+      width: 190px;
+      opacity: 0.85;
+      filter: drop-shadow(0 0 10px rgba(255,255,255,0.08));
     }
 
-    /* 2️⃣ SAAT – glow efekti */
+    /* SAAT */
     #clock {
       font-size: 110px;
-      font-weight: bold;
+      font-weight: 700;
       letter-spacing: 4px;
-      text-shadow: 0 0 12px rgba(255,255,255,0.15);
+      text-shadow:
+        0 0 12px rgba(255,255,255,0.15),
+        0 0 24px rgba(255,255,255,0.08);
     }
 
-    /* 3️⃣ TARİH – ayrıştırılmış */
+    /* TARİH */
     #date {
       margin-top: 20px;
       font-size: 42px;
       opacity: 0.85;
       letter-spacing: 1px;
+      font-weight: 300;
+    }
+
+    /* ALT BANT – en altta sabit */
+    #ticker {
+      position: absolute;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      padding: 18px 30px;
+      text-align: center;
+      font-size: 28px;
+      letter-spacing: 0.5px;
+      background: rgba(0,0,0,0.18);
+      backdrop-filter: blur(6px);
+      -webkit-backdrop-filter: blur(6px);
+      border-top: 1px solid rgba(255,255,255,0.08);
+      color: rgba(255,255,255,0.92);
     }
   </style>
 </head>
 
 <body>
 
-  <!-- LOGO -->
   <img src="logo.png" alt="Porto Bello Hotel" class="logo">
 
-  <!-- SAAT & TARİH -->
   <div id="clock">--:--:--</div>
   <div id="date">--</div>
+
+  <!-- ALT BANT MESAJ -->
+  <div id="ticker">🍽️ Dinner 19:00–21:30 | 🎉 Animation Show 21:00</div>
 
   <script>
     function update() {
