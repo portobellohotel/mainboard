@@ -66,7 +66,7 @@
       border-top: 1px solid rgba(255,255,255,0.08);
     }
 
-    /* YANIP SÖNME */
+    /* AKTİF – YANIP SÖNME */
     @keyframes pulse {
       0% { opacity: 1; }
       50% { opacity: 0.4; }
@@ -77,6 +77,12 @@
       animation: pulse 1.2s ease-in-out infinite;
       color: #ffd166;
       font-weight: 600;
+      opacity: 1 !important;
+    }
+
+    /* GEÇMİŞ – SİLİK */
+    .past {
+      opacity: 0.35;
     }
   </style>
 </head>
@@ -110,45 +116,52 @@
           year: "numeric"
         });
 
-      highlightActive(now);
+      updateStates(now);
     }
 
-    function clearAll() {
-      ["breakfast","lunch","dinner","show"].forEach(id =>
-        document.getElementById(id).classList.remove("active")
-      );
+    function clearClasses() {
+      ["breakfast","lunch","dinner","show"].forEach(id => {
+        const el = document.getElementById(id);
+        el.classList.remove("active","past");
+      });
     }
 
-    function highlightActive(now) {
-      clearAll();
+    function updateStates(now) {
+      clearClasses();
 
       const h = now.getHours();
       const m = now.getMinutes();
 
-      // Breakfast 07:00–10:00
-      if (h >= 7 && h < 10) {
-        document.getElementById("breakfast").classList.add("active");
-      }
+      const breakfast = document.getElementById("breakfast");
+      const lunch = document.getElementById("lunch");
+      const dinner = document.getElementById("dinner");
+      const show = document.getElementById("show");
 
-      // Lunch 12:30–15:00  ✅ TEST ARALIĞI
-      if (
-        (h === 12 && m >= 30) ||
-        (h === 13) ||
-        (h === 14) ||
-        (h === 15 && m === 0)
-      ) {
-        document.getElementById("lunch").classList.add("active");
-      }
+      // Breakfast 07:00–10:00
+      if (h < 7) {}
+      else if (h >= 7 && h < 10) breakfast.classList.add("active");
+      else breakfast.classList.add("past");
+
+      // Lunch 12:30–15:00
+      if (h < 12 || (h === 12 && m < 30)) {}
+      else if (h === 12 && m >= 30 || h === 13 || h === 14 || (h === 15 && m === 0))
+        lunch.classList.add("active");
+      else if (h > 15 || (h === 15 && m > 0))
+        lunch.classList.add("past");
 
       // Dinner 19:00–21:30
-      if (h >= 19 && (h < 21 || (h === 21 && m <= 30))) {
-        document.getElementById("dinner").classList.add("active");
-      }
+      if (h < 19) {}
+      else if (h >= 19 && (h < 21 || (h === 21 && m <= 30)))
+        dinner.classList.add("active");
+      else if (h > 21 || (h === 21 && m > 30))
+        dinner.classList.add("past");
 
       // Animation Show 20:50–21:10
-      if ((h === 20 && m >= 50) || (h === 21 && m <= 10)) {
-        document.getElementById("show").classList.add("active");
-      }
+      if (h < 20 || (h === 20 && m < 50)) {}
+      else if ((h === 20 && m >= 50) || (h === 21 && m <= 10))
+        show.classList.add("active");
+      else if (h > 21 || (h === 21 && m > 10))
+        show.classList.add("past");
     }
 
     updateTime();
