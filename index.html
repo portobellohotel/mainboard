@@ -104,7 +104,7 @@
     // Base texts (no labels)
     const BASE = {
       breakfast: "🍳 Breakfast 07:00–10:00",
-      lunch:     "🍽️ Lunch 12:30–16:00",   // TEST end 16:00
+      lunch:     "🍽️ Lunch 12:30–17:00",   // ✅ TEST END 17:00
       dinner:    "🍷 Dinner 19:00–21:30",
       show:      "🎉 Animation Show 21:00"
     };
@@ -135,7 +135,7 @@
       ["breakfast","lunch","dinner","show"].forEach(id => {
         const el = document.getElementById(id);
         el.classList.remove("active","past");
-        setText(id); // reset without label
+        setText(id);
       });
     }
 
@@ -160,7 +160,7 @@
         breakfast.classList.add("past");
       }
 
-      // Lunch 12:30–16:00 (TEST)
+      // Lunch 12:30–17:00 ✅ TEST
       if (h < 12 || (h === 12 && m < 30)) {
         // future
       } else if (
@@ -168,11 +168,12 @@
         h === 13 ||
         h === 14 ||
         h === 15 ||
-        (h === 16 && m === 0)
+        h === 16 ||
+        (h === 17 && m === 0)
       ) {
         lunch.classList.add("active");
         setText("lunch", "Now Open");
-      } else if (h > 16 || (h === 16 && m > 0)) {
+      } else if (h > 17 || (h === 17 && m > 0)) {
         lunch.classList.add("past");
       }
 
