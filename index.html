@@ -5,7 +5,14 @@
 <title>Porto Bello Hotel | Time & Date</title>
 <meta name="viewport" content="width=device-width, initial-scale=1" />
 <style>
-:root{ --row-gap:10px; --pad-x:18px; --pad-y:14px; }
+:root{
+  --row-gap:10px;
+  --pad-x:18px;
+  --pad-y:14px;
+
+  /* ✅ EN PRATİK ÇÖZÜM: ticker iç boşluk (sol/sağ) */
+  --ticker-pad: 28px;  /* 22-40 arası oyna: büyüdükçe ikonlar daha görünür */
+}
 
 html, body {
   margin: 0; width: 100%; height: 100%;
@@ -44,7 +51,7 @@ body.mode-snow{
   position:absolute;
   inset:0;
   pointer-events:none;
-  z-index:2;          /* fxCanvas(3) altında, içeriklerin altında */
+  z-index:2;
   opacity:0;
   transition: opacity 700ms ease;
 }
@@ -64,7 +71,6 @@ body.mode-sunny #sunFlare{ opacity: 1; }
       rgba(255,215,120,.10) 22%,
       rgba(255,215,120,.06) 34%,
       rgba(255,215,120,0) 60%);
-  filter: blur(0px);
   mix-blend-mode: screen;
 }
 
@@ -140,7 +146,7 @@ body.mode-sunny #sunFlare{ opacity: 1; }
   z-index: 6;
 }
 
-/* WEATHER (TOP RIGHT) — PREMIUM SHADOW (NO BOX LOOK) */
+/* WEATHER (TOP RIGHT) */
 .weather {
   --w-scale: 1.5;
   position: absolute; top: 4px; right: 4px;
@@ -234,14 +240,34 @@ body.mode-sunny #sunFlare{ opacity: 1; }
   display: flex; flex-direction: column; gap: var(--row-gap);
   z-index: 4;
 }
+
 .ticker {
   position: relative; width: 100%;
   line-height: 1.35; font-size: clamp(16px, 2.2vw, 28px);
   white-space: nowrap;
   overflow: hidden;
-  mask-image: linear-gradient(90deg, transparent 0, #000 36px, #000 calc(100% - 36px), transparent 100%);
-  -webkit-mask-image: linear-gradient(90deg, transparent 0, #000 36px, #000 calc(100% - 36px), transparent 100%);
+
+  /* ✅ içerik artık soldan/sağdan gömülmez */
+  padding: 0 var(--ticker-pad);
+  box-sizing: border-box;
+
+  /* ✅ fade/mask artık padding’e göre çalışır */
+  mask-image: linear-gradient(
+    90deg,
+    transparent 0,
+    #000 var(--ticker-pad),
+    #000 calc(100% - var(--ticker-pad)),
+    transparent 100%
+  );
+  -webkit-mask-image: linear-gradient(
+    90deg,
+    transparent 0,
+    #000 var(--ticker-pad),
+    #000 calc(100% - var(--ticker-pad)),
+    transparent 100%
+  );
 }
+
 .belt {
   display: inline-flex; align-items: center; gap: 12px;
   will-change: transform;
@@ -273,7 +299,7 @@ body.mode-sunny #sunFlare{ opacity: 1; }
   width: 100%;
   height: 100%;
   pointer-events: none;
-  z-index: 3; /* UI’nin altında */
+  z-index: 3;
 }
 .fxGlow{
   filter: drop-shadow(0 0 6px rgba(255,255,255,.12));
@@ -348,19 +374,19 @@ const ids = ["breakfast","lunch","patisserie","snack","dinner","sailorsBar","sho
 const toMin = (h,m)=>h*60+m;
 const nowMin = d=>d.getHours()*60 + d.getMinutes();
 const inRange = (n,s,e)=> s<e ? (n>=s && n<=e) : (s>e ? (n>=s || n<=e) : n===s);
-const isPast  = (n,s,e)=> s<e ? (n>e) : ((n>e) && (n<s)); // overnight gap
+const isPast  = (n,s,e)=> s<e ? (n>e) : ((n>e) && (n<s));
 
 /* ---------- Schedule ---------- */
 const schedule = {
-  breakfast:   {start:toMin(7,0),   end:toMin(10,30), badge:"NOW OPEN", type:"food"},
-  lunch:       {start:toMin(12,30), end:toMin(14,0),  badge:"NOW OPEN", type:"food"},
-  patisserie:  {start:toMin(12,0),  end:toMin(18,0),  badge:"NOW OPEN", type:"food"},
-  snack:       {start:toMin(14,30), end:toMin(15,30), badge:"NOW OPEN", type:"food"},
-  dinner:      {start:toMin(18,30), end:toMin(21,0),  badge:"NOW OPEN", type:"food"},
-  sailorsBar:  {start:toMin(20,30), end:toMin(22,30), badge:"NOW OPEN", type:"food"},
-  show:        {start:toMin(21,30), end:toMin(22,30), badge:"LIVE NOW", type:"live"},
-  lateSnack:   {start:toMin(23,0),  end:toMin(6,0),   badge:"NOW OPEN", type:"food", noPast:true},
-  lobbyBar:    {start:toMin(8,30),  end:1440,         badge:"NOW OPEN", type:"food"}
+  breakfast:{start:toMin(7,0),end:toMin(10,30),badge:"NOW OPEN",type:"food"},
+  lunch:{start:toMin(12,30),end:toMin(14,0),badge:"NOW OPEN",type:"food"},
+  patisserie:{start:toMin(12,0),end:toMin(18,0),badge:"NOW OPEN",type:"food"},
+  snack:{start:toMin(14,30),end:toMin(15,30),badge:"NOW OPEN",type:"food"},
+  dinner:{start:toMin(18,30),end:toMin(21,0),badge:"NOW OPEN",type:"food"},
+  sailorsBar:{start:toMin(20,30),end:toMin(22,30),badge:"NOW OPEN",type:"food"},
+  show:{start:toMin(21,30),end:toMin(22,30),badge:"LIVE NOW",type:"live"},
+  lateSnack:{start:toMin(23,0),end:toMin(6,0),badge:"NOW OPEN",type:"food",noPast:true},
+  lobbyBar:{start:toMin(8,30),end:1440,badge:"NOW OPEN",type:"food"}
 };
 
 function clearStates(){
@@ -383,15 +409,10 @@ function updateStates(d){
     const el=document.getElementById(key);
     if(!el) return;
     const active=inRange(n,rule.start,rule.end);
-    const past  =isPast(n,rule.start,rule.end);
+    const past=isPast(n,rule.start,rule.end);
     if(active){
-      if(rule.type==="live"){
-        el.classList.add("live","activeGlow");
-        addBadge(el,rule.badge,true);
-      } else {
-        el.classList.add("active","activeGlow");
-        addBadge(el,rule.badge,false);
-      }
+      if(rule.type==="live"){ el.classList.add("live","activeGlow"); addBadge(el,rule.badge,true); }
+      else { el.classList.add("active","activeGlow"); addBadge(el,rule.badge,false); }
     } else if (past && !rule.noPast){
       el.classList.add("past");
     }
@@ -408,7 +429,7 @@ function tick(){
   updateStates(d);
 }
 
-/* ---------- Smart marquee (only if needed) ---------- */
+/* ---------- Smart marquee ---------- */
 function setupMarquee(rowId){
   const row = document.getElementById(rowId);
   if(!row) return;
@@ -433,19 +454,10 @@ function setupMarquee(rowId){
   row.style.setProperty('--dur', dur+'s');
   row.classList.add("marquee");
 }
-function setupAllMarquees(){
-  setupMarquee("row1");
-  setupMarquee("row2");
-  setupMarquee("row3");
-}
+function setupAllMarquees(){ setupMarquee("row1"); setupMarquee("row2"); setupMarquee("row3"); }
 
-/* ---------- Weather (Antalya / Konyaaltı) ---------- */
-const WEATHER = {
-  name: "Antalya / Konyaaltı",
-  lat: 36.863965,
-  lon: 30.630398,
-  tz: "Europe/Istanbul"
-};
+/* ---------- Weather ---------- */
+const WEATHER = { name:"Antalya / Konyaaltı", lat:36.863965, lon:30.630398, tz:"Europe/Istanbul" };
 
 function degToCardinal(deg){
   if (deg === null || deg === undefined || Number.isNaN(deg)) return "";
@@ -453,45 +465,32 @@ function degToCardinal(deg){
   const idx = Math.round(((deg % 360) / 22.5)) % 16;
   return dirs[idx];
 }
-
 function wmoToIconAndText(code, isDay=true){
   const c = Number(code);
   if(Number.isNaN(c)) return { icon:"🌡️", text:"Weather" };
-
   if (c === 95) return { icon:"⛈️", text:"Thunderstorm" };
   if (c === 96 || c === 99) return { icon:"⛈️", text:"Thunderstorm (hail)" };
-
   if (c === 71 || c === 73 || c === 75) return { icon:"❄️", text:"Snow" };
   if (c === 77) return { icon:"🌨️", text:"Snow grains" };
   if (c === 85 || c === 86) return { icon:"🌨️", text:"Snow showers" };
   if (c === 66 || c === 67) return { icon:"🌨️", text:"Freezing rain" };
-
   if (c === 51 || c === 53 || c === 55) return { icon:"🌦️", text:"Drizzle" };
   if (c === 56 || c === 57) return { icon:"🌧️", text:"Freezing drizzle" };
   if (c === 61 || c === 63 || c === 65) return { icon:"🌧️", text:"Rain" };
   if (c === 80 || c === 81 || c === 82) return { icon:"🌧️", text:"Rain showers" };
-
   if (c === 45 || c === 48) return { icon:"🌫️", text:"Fog" };
-
   if (c === 0) return { icon: isDay ? "☀️" : "🌙", text:"Clear sky" };
   if (c === 1) return { icon: isDay ? "🌤️" : "🌙", text:"Mostly clear" };
   if (c === 2) return { icon:"⛅", text:"Partly cloudy" };
   if (c === 3) return { icon:"☁️", text:"Overcast" };
-
   return { icon:"🌡️", text:"Weather" };
 }
-
-/* =========================
-   Weather → FX mode mapping
-   ========================= */
 function effectModeFromWMO(code, isDay){
   const c = Number(code);
   if(Number.isNaN(c)) return "none";
-
   const SNOW = new Set([71,73,75,77,85,86]);
   const RAIN = new Set([51,53,55,56,57,61,63,65,66,67,80,81,82,95,96,99]);
   const FOG  = new Set([45,48]);
-
   if (SNOW.has(c)) return "snow";
   if (RAIN.has(c)) return "rain";
   if (FOG.has(c))  return "none";
@@ -499,38 +498,17 @@ function effectModeFromWMO(code, isDay){
   return "none";
 }
 
-/* ================================
-   FX Engine (snow / rain / none)
-   ================================= */
+/* ---------- FX Engine ---------- */
 const fx = {
-  canvas: null,
-  ctx: null,
-  w: 0,
-  h: 0,
-  mode: "none",
-  parts: [],
-  raf: 0,
-
-  // Snow
-  snowDensity: 120,
-  snowWind: 0.25,
-  snowSpeed: 0.6,
-  snowMaxR: 3.2,
-  snowMinR: 0.8,
-  snowDrift: 0.6,
-
-  // Rain
-  rainDensity: 180,
-  rainSpeed: 1.9,
-  rainSlant: 0.9
+  canvas:null, ctx:null, w:0, h:0, mode:"none", parts:[], raf:0,
+  snowDensity:120, snowWind:0.25, snowSpeed:0.6, snowMaxR:3.2, snowMinR:0.8, snowDrift:0.6,
+  rainDensity:180, rainSpeed:1.9, rainSlant:0.9
 };
-
 function clamp(n,a,b){ return Math.max(a, Math.min(b, n)); }
 function rnd(min,max){ return Math.random()*(max-min)+min; }
 
 function resizeFX(){
-  fx.w = window.innerWidth;
-  fx.h = window.innerHeight;
+  fx.w = window.innerWidth; fx.h = window.innerHeight;
   fx.canvas.width  = Math.floor(fx.w * devicePixelRatio);
   fx.canvas.height = Math.floor(fx.h * devicePixelRatio);
   fx.canvas.style.width = fx.w + "px";
@@ -538,7 +516,6 @@ function resizeFX(){
   fx.ctx.setTransform(devicePixelRatio,0,0,devicePixelRatio,0,0);
 
   const areaFactor = (fx.w * fx.h) / (1920*1080);
-
   if (fx.mode === "snow"){
     const target = clamp(Math.round(areaFactor * fx.snowDensity), 70, 240);
     fitParticles(target, () => newSnow(true));
@@ -550,61 +527,34 @@ function resizeFX(){
     clearFX();
   }
 }
-
 function fitParticles(target, factory){
-  if (fx.parts.length < target){
-    for(let i=fx.parts.length; i<target; i++) fx.parts.push(factory());
-  } else if (fx.parts.length > target){
-    fx.parts.length = target;
-  }
+  if (fx.parts.length < target){ for(let i=fx.parts.length; i<target; i++) fx.parts.push(factory()); }
+  else if (fx.parts.length > target){ fx.parts.length = target; }
 }
-
 function newSnow(randomY=false){
   const r = rnd(fx.snowMinR, fx.snowMaxR);
-  return {
-    t: "snow",
-    x: rnd(0, fx.w),
-    y: randomY ? rnd(0, fx.h) : rnd(-fx.h*0.2, 0),
-    r,
-    vy: rnd(0.6, 1.8) * (r/1.6) * fx.snowSpeed,
-    vx: rnd(-0.35, 0.35) + fx.snowWind,
-    phase: rnd(0, Math.PI*2),
-    omega: rnd(0.008, 0.02),
-    alpha: rnd(0.35, 0.85)
+  return { t:"snow", x:rnd(0,fx.w), y:randomY?rnd(0,fx.h):rnd(-fx.h*0.2,0), r,
+    vy:rnd(0.6,1.8)*(r/1.6)*fx.snowSpeed,
+    vx:rnd(-0.35,0.35)+fx.snowWind,
+    phase:rnd(0,Math.PI*2), omega:rnd(0.008,0.02), alpha:rnd(0.35,0.85)
   };
 }
-
 function newRain(randomY=false){
-  const len = rnd(10, 22);
-  return {
-    t: "rain",
-    x: rnd(0, fx.w),
-    y: randomY ? rnd(0, fx.h) : rnd(-fx.h*0.2, 0),
-    vy: rnd(6, 12) * fx.rainSpeed,
-    vx: rnd(2, 5)  * fx.rainSlant,
-    len,
-    alpha: rnd(0.18, 0.38),
-    w: rnd(1, 1.6)
+  const len = rnd(10,22);
+  return { t:"rain", x:rnd(0,fx.w), y:randomY?rnd(0,fx.h):rnd(-fx.h*0.2,0),
+    vy:rnd(6,12)*fx.rainSpeed,
+    vx:rnd(2,5)*fx.rainSlant,
+    len, alpha:rnd(0.18,0.38), w:rnd(1,1.6)
   };
 }
-
-function clearFX(){
-  fx.ctx.clearRect(0,0,fx.w,fx.h);
-}
+function clearFX(){ fx.ctx.clearRect(0,0,fx.w,fx.h); }
 
 function startFXLoop(){
   if (fx.raf) return;
-  const loop = ()=>{
-    fx.raf = requestAnimationFrame(loop);
-    drawFX();
-  };
+  const loop = ()=>{ fx.raf = requestAnimationFrame(loop); drawFX(); };
   fx.raf = requestAnimationFrame(loop);
 }
-function stopFXLoop(){
-  if (!fx.raf) return;
-  cancelAnimationFrame(fx.raf);
-  fx.raf = 0;
-}
+function stopFXLoop(){ if(!fx.raf) return; cancelAnimationFrame(fx.raf); fx.raf=0; }
 
 function drawFX(){
   const ctx = fx.ctx;
@@ -615,18 +565,10 @@ function drawFX(){
       const f = fx.parts[i];
       f.phase += f.omega;
       const sway = Math.sin(f.phase) * fx.snowDrift;
-
-      f.x += f.vx + sway*0.25;
-      f.y += f.vy;
-
-      if (f.y > fx.h + 10){
-        fx.parts[i] = newSnow(false);
-        fx.parts[i].y = -10;
-        continue;
-      }
+      f.x += f.vx + sway*0.25; f.y += f.vy;
+      if (f.y > fx.h + 10){ fx.parts[i] = newSnow(false); fx.parts[i].y = -10; continue; }
       if (f.x < -20) f.x = fx.w + 20;
       if (f.x > fx.w + 20) f.x = -20;
-
       ctx.beginPath();
       ctx.fillStyle = `rgba(255,255,255,${f.alpha})`;
       ctx.arc(f.x, f.y, f.r, 0, Math.PI*2);
@@ -639,16 +581,13 @@ function drawFX(){
     ctx.lineCap = "round";
     for(let i=0;i<fx.parts.length;i++){
       const d = fx.parts[i];
-      d.x += d.vx;
-      d.y += d.vy;
-
+      d.x += d.vx; d.y += d.vy;
       if (d.y > fx.h + 30 || d.x > fx.w + 30){
         fx.parts[i] = newRain(false);
         fx.parts[i].y = -20;
         fx.parts[i].x = rnd(-50, fx.w);
         continue;
       }
-
       ctx.beginPath();
       ctx.strokeStyle = `rgba(180,220,255,${d.alpha})`;
       ctx.lineWidth = d.w;
@@ -659,12 +598,9 @@ function drawFX(){
     return;
   }
 }
-
-/* Mode set: sun -> flare açık (CSS), canvas anim durur */
 function setMode(mode){
   if (!mode) mode = "none";
   if (fx.mode === mode) return;
-
   fx.mode = mode;
 
   document.body.classList.remove("mode-snow","mode-rain","mode-sunny");
@@ -682,7 +618,6 @@ function setMode(mode){
   }
   startFXLoop();
 }
-
 function initFX(){
   fx.canvas = document.getElementById("fxCanvas");
   fx.ctx = fx.canvas.getContext("2d", { alpha: true });
@@ -696,9 +631,7 @@ async function fetchWeather(){
     "https://api.open-meteo.com/v1/forecast"
     + "?latitude=" + encodeURIComponent(WEATHER.lat)
     + "&longitude=" + encodeURIComponent(WEATHER.lon)
-    + "&current=" + encodeURIComponent(
-        "temperature_2m,apparent_temperature,relative_humidity_2m,wind_speed_10m,wind_direction_10m,surface_pressure,weather_code,is_day"
-      )
+    + "&current=" + encodeURIComponent("temperature_2m,apparent_temperature,relative_humidity_2m,wind_speed_10m,wind_direction_10m,surface_pressure,weather_code,is_day")
     + "&timezone=" + encodeURIComponent(WEATHER.tz);
 
   try{
@@ -723,7 +656,7 @@ async function fetchWeather(){
 
     document.getElementById("wMain").textContent = `${t}°C`;
     document.getElementById("wSub").textContent  = `Feels like ${feels}°C • Wind ${wind} km/h ${wdir}`;
-    document.getElementById("wSub2").textContent = `Humidity ${hum}% • Pressure ${pres} hPa`; 
+    document.getElementById("wSub2").textContent = `Humidity ${hum}% • Pressure ${pres} hPa`;
 
     setMode(effectModeFromWMO(c.weather_code, isDay));
   }catch(e){
@@ -734,15 +667,10 @@ async function fetchWeather(){
 
 /* ---------- Init ---------- */
 tick(); setupAllMarquees(); initFX(); fetchWeather();
-
 setInterval(tick, 1000);
 setInterval(setupAllMarquees, 4000);
 setInterval(fetchWeather, 10 * 60 * 1000);
-
-window.addEventListener('resize', ()=>{
-  setupAllMarquees();
-  resizeFX();
-});
+window.addEventListener('resize', ()=>{ setupAllMarquees(); resizeFX(); });
 </script>
 </body>
 </html>
