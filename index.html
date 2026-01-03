@@ -52,21 +52,35 @@
       font-weight: 300;
     }
 
-    /* BOTTOM BAR */
-    #ticker {
+    /* 2 BOTTOM BARS */
+    .ticker {
       position: absolute;
       left: 0;
       right: 0;
-      bottom: 0;
-      padding: 18px 30px;
+      padding: 16px 30px;
       text-align: center;
-      font-size: 28px;
+      font-size: 26px;
       background: rgba(0,0,0,0.18);
       backdrop-filter: blur(6px);
+      -webkit-backdrop-filter: blur(6px);
       border-top: 1px solid rgba(255,255,255,0.08);
+      line-height: 1.35;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
     }
 
-    /* BLINK */
+    /* Upper one (above) */
+    #tickerTop {
+      bottom: 58px; /* üst bant */
+    }
+
+    /* Lower one (bottom-most) */
+    #tickerBottom {
+      bottom: 0;    /* alt bant */
+    }
+
+    /* ACTIVE – PULSE */
     @keyframes pulse {
       0% { opacity: 1; }
       50% { opacity: 0.4; }
@@ -79,14 +93,15 @@
       font-weight: 600;
     }
 
-    .past {
-      opacity: 0.35;
-    }
+    /* PAST – DIM */
+    .past { opacity: 0.35; }
 
+    /* Small status label */
     .status {
-      font-size: 22px;
+      font-size: 20px;
       margin-left: 8px;
-      opacity: 0.9;
+      opacity: 0.92;
+      font-weight: 600;
     }
   </style>
 </head>
@@ -98,17 +113,74 @@
   <div id="clock"></div>
   <div id="date"></div>
 
-  <div id="ticker">
-    <span id="breakfast">🍳 Breakfast 07:00–10:00</span> |
-    <span id="lunch">🍽️ Lunch 12:30–17:00</span> |
-    <span id="dinner">🍷 Dinner 19:00–21:30</span> |
-    <span id="show">🎉 Animation Show 10:00</span>
+  <!-- 1. BANT (YUKARDAKİ) -->
+  <div id="tickerTop" class="ticker">
+    <span id="breakfast">Breakfast 07:00-10:00</span> |
+    <span id="lateBreakfast">Late Breakfast 10:00-10:30</span> |
+    <span id="lunch">Lunch 12:30-14:00</span> |
+    <span id="snack">Snack 14:30-15:30</span>
+  </div>
+
+  <!-- 2. BANT (AŞAĞIDAKİ) -->
+  <div id="tickerBottom" class="ticker">
+    <span id="dinner">Dinner 18:30-21:00</span> |
+    <span id="show">Animation Show 21:30</span> |
+    <span id="lateSnack">Late Snack 23:00-06:00</span> |
+    <span id="lobbyBar">Lobby Bar 08:30-00:00</span>
   </div>
 
   <script>
-    function updateTime() {
-      const now = new Date();
+    // ---- Helpers ----
+    const BASE_TEXT = {
+      breakfast: "Breakfast 07:00-10:00",
+      lateBreakfast: "Late Breakfast 10:00-10:30",
+      lunch: "Lunch 12:30-14:00",
+      snack: "Snack 14:30-15:30",
 
+      dinner: "Dinner 18:30-21:00",
+      show: "Animation Show 21:30",
+      lateSnack: "Late Snack 23:00-06:00",
+      lobbyBar: "Lobby Bar 08:30-00:00"
+    };
+
+    function setText(id, extra = "") {
+      const el = document.getElementById(id);
+      el.innerHTML = `${BASE_TEXT[id]}${extra ? ` <span class="status">(${extra})</span>` : ""}`;
+    }
+
+    function hmToMinutes(h, m) { return h * 60 + m; }
+
+    // Time window checker, supports cross-midnight (e.g. 23:00–06:00)
+    function inWindow(nowMin, startMin, endMin) {
+      if (startMin <= endMin) {
+        return nowMin >= startMin && nowMin <= endMin;
+      }
+      // crosses midnight
+      return nowMin >= startMin || nowMin <= endMin;
+    }
+
+    // Marks past: if end time is before "now" in normal same-day windows.
+    // For cross-midnight services (23:00–06:00, 08:30–00:00), we handle with rules below.
+    function markPastSimple(nowMin, endMin) {
+      return nowMin > endMin;
+    }
+
+    function clearAll() {
+      Object.keys(BASE_TEXT).forEach(id => {
+        const el = document.getElementById(id);
+        el.classList.remove("active", "past");
+        setText(id);
+      });
+    }
+
+    // ---- Core update ----
+    function updateScreen() {
+      const now = new Date();
+      const h = now.getHours();
+      const m = now.getMinutes();
+      const nowMin = hmToMinutes(h, m);
+
+      // time/date
       document.getElementById("clock").textContent =
         now.toLocaleTimeString("en-GB", { hour12: false });
 
@@ -120,67 +192,62 @@
           year: "numeric"
         });
 
-      updateStates(now);
-    }
+      clearAll();
 
-    function clearStates() {
-      ["breakfast","lunch","dinner","show"].forEach(id => {
+      // ---- Define schedules (minutes) ----
+      const S = {
+        breakfast:      { start: hmToMinutes(7, 0),  end: hmToMinutes(10, 0),  status: "Now Open" },
+        lateBreakfast:  { start: hmToMinutes(10, 0), end: hmToMinutes(10, 30), status: "Now Open" },
+        lunch:          { start: hmToMinutes(12, 30),end: hmToMinutes(14, 0),  status: "Now Open" },
+        snack:          { start: hmToMinutes(14, 30),end: hmToMinutes(15, 30), status: "Now Open" },
+
+        dinner:         { start: hmToMinutes(18, 30),end: hmToMinutes(21, 0),  status: "Now Open" },
+
+        // Animation Show: single time 21:30 -> we give it a window (21:20–21:40) so it can blink
+        // You can change the buffer here:
+        show:           { start: hmToMinutes(21, 20),end: hmToMinutes(21, 40), status: "Live Now" },
+
+        lateSnack:      { start: hmToMinutes(23, 0), end: hmToMinutes(6, 0),   status: "Now Open", crossMidnight: true },
+
+        // Lobby Bar 08:30–00:00 (midnight)
+        lobbyBar:       { start: hmToMinutes(8, 30), end: hmToMinutes(0, 0),   status: "Now Open", crossMidnight: true }
+      };
+
+      // ---- Apply active/past rules ----
+      Object.entries(S).forEach(([id, cfg]) => {
         const el = document.getElementById(id);
-        el.classList.remove("active","past");
-        el.innerHTML = el.innerHTML.replace(/<span.*?>.*?<\/span>/, "");
+
+        // active
+        if (inWindow(nowMin, cfg.start, cfg.end)) {
+          el.classList.add("active");
+          setText(id, cfg.status);
+          return;
+        }
+
+        // past logic
+        if (!cfg.crossMidnight) {
+          // normal window same day
+          if (markPastSimple(nowMin, cfg.end)) el.classList.add("past");
+        } else {
+          // cross-midnight windows:
+          // lateSnack 23:00–06:00: past only between 06:01 and 22:59
+          // lobbyBar 08:30–00:00: past only between 00:01 and 08:29
+          if (id === "lateSnack") {
+            const afterMorning = nowMin > hmToMinutes(6, 0);
+            const beforeLateSnackStart = nowMin < hmToMinutes(23, 0);
+            if (afterMorning && beforeLateSnackStart) el.classList.add("past");
+          }
+          if (id === "lobbyBar") {
+            const afterMidnight = nowMin > hmToMinutes(0, 0);
+            const beforeStart = nowMin < hmToMinutes(8, 30);
+            if (afterMidnight && beforeStart) el.classList.add("past");
+          }
+        }
       });
     }
 
-    function setStatus(el, text) {
-      el.innerHTML += `<span class="status">(${text})</span>`;
-    }
-
-    function updateStates(now) {
-      clearStates();
-
-      const h = now.getHours();
-      const m = now.getMinutes();
-
-      const breakfast = document.getElementById("breakfast");
-      const lunch = document.getElementById("lunch");
-      const dinner = document.getElementById("dinner");
-      const show = document.getElementById("show");
-
-      /* BREAKFAST 07:00–10:00 */
-      if (h >= 7 && h < 10) {
-        breakfast.classList.add("active");
-        setStatus(breakfast, "Now Open");
-      } else if (h >= 10) {
-        breakfast.classList.add("past");
-      }
-
-      /* LUNCH 12:30–17:00 */
-      if ((h === 12 && m >= 30) || (h > 12 && h < 17)) {
-        lunch.classList.add("active");
-        setStatus(lunch, "Now Open");
-      } else if (h >= 17) {
-        lunch.classList.add("past");
-      }
-
-      /* DINNER 19:00–21:30 */
-      if (h >= 19 && (h < 21 || (h === 21 && m <= 30))) {
-        dinner.classList.add("active");
-        setStatus(dinner, "Now Open");
-      } else if (h > 21 || (h === 21 && m > 30)) {
-        dinner.classList.add("past");
-      }
-
-      /* ANIMATION SHOW TEST 09:50–10:10 */
-      if ((h === 9 && m >= 50) || (h === 10 && m <= 10)) {
-        show.classList.add("active");
-        setStatus(show, "Live Now");
-      } else if (h > 10 || (h === 10 && m > 10)) {
-        show.classList.add("past");
-      }
-    }
-
-    updateTime();
-    setInterval(updateTime, 1000);
+    updateScreen();
+    setInterval(updateScreen, 1000);
   </script>
 
 </body>
