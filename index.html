@@ -4,308 +4,221 @@
   <meta charset="UTF-8" />
   <title>Porto Bello Hotel | Time & Date</title>
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-
   <style>
+    :root{ --row-gap:10px; --pad-x:18px; --pad-y:14px; }
+
     html, body {
-      margin: 0;
-      width: 100%;
-      height: 100%;
-      background: #0b1320;
-      color: #ffffff;
+      margin: 0; width: 100%; height: 100%;
+      background: #0b1320; color: #fff;
       font-family: Arial, Helvetica, sans-serif;
       overflow: hidden;
     }
 
     body {
-      position: relative;
+      position: relative; display: flex; flex-direction: column;
+      align-items: center; justify-content: center;
     }
 
     /* LOGO */
     .logo {
-      position: absolute;
-      top: 30px;
-      left: 30px;
-      width: 190px;
-      opacity: 0.85;
-      filter: drop-shadow(0 0 10px rgba(255,255,255,0.08));
-      user-select: none;
-      pointer-events: none;
-      z-index: 5;
+      position: absolute; top: 28px; left: 28px;
+      width: 190px; opacity: .88;
+      filter: drop-shadow(0 0 10px rgba(255,255,255,.08));
+      user-select: none; pointer-events: none;
     }
 
-    /* CENTER WRAP (IMPORTANT FIX) */
-    .center {
-      position: relative;
-      height: 100vh;
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      justify-content: center;
-
-      /* 2 bantın kapladığı alanı telafi eder (tarih kaybolmaz) */
-      padding-bottom: 160px;
-      box-sizing: border-box;
-
-      z-index: 3;
-      text-align: center;
-    }
-
-    /* CLOCK (auto scale) */
+    /* CLOCK + DATE */
     #clock {
-      font-size: clamp(56px, 12vw, 110px);
-      font-weight: 700;
-      letter-spacing: 4px;
-      text-shadow:
-        0 0 12px rgba(255,255,255,0.15),
-        0 0 24px rgba(255,255,255,0.08);
-      line-height: 1.05;
+      font-size: clamp(72px, 9vw, 120px);
+      font-weight: 750; letter-spacing: 4px;
+      text-shadow: 0 0 12px rgba(255,255,255,.15), 0 0 24px rgba(255,255,255,.08);
     }
-
-    /* DATE (auto scale) */
     #date {
-      margin-top: 16px;
-      font-size: clamp(18px, 4.6vw, 42px);
-      opacity: 0.85;
-      letter-spacing: 1px;
-      font-weight: 300;
-      line-height: 1.2;
+      margin-top: 18px; font-size: clamp(24px, 3.2vw, 44px);
+      opacity: .86; letter-spacing: 1px; font-weight: 300;
     }
 
-    /* TWO TICKERS */
-    .tickerWrap {
-      position: absolute;
-      left: 0;
-      right: 0;
-      bottom: 0;
-      background: rgba(0,0,0,0.18);
-      backdrop-filter: blur(6px);
-      border-top: 1px solid rgba(255,255,255,0.08);
-      overflow: hidden;
-      z-index: 10;
+    /* BOTTOM AREA (2 ROWS) */
+    .bottom {
+      position: absolute; left: 0; right: 0; bottom: 0;
+      padding: var(--pad-y) var(--pad-x) calc(var(--pad-y) + 4px);
+      background: rgba(0,0,0,.18); backdrop-filter: blur(6px);
+      border-top: 1px solid rgba(255,255,255,.08);
+      display: flex; flex-direction: column; gap: var(--row-gap);
     }
 
-    .tickerRow {
-      position: relative;
-      overflow: hidden;
+    .ticker {
+      position: relative; width: 100%;
+      line-height: 1.35; font-size: clamp(16px, 2.2vw, 28px);
       white-space: nowrap;
-      padding: 14px 22px;
+      /* clipping for marquee */
+      overflow: hidden; mask-image: linear-gradient(90deg, transparent 0, #000 36px, #000 calc(100% - 36px), transparent 100%);
+      -webkit-mask-image: linear-gradient(90deg, transparent 0, #000 36px, #000 calc(100% - 36px), transparent 100%);
     }
 
-    .tickerRow.top {
-      border-bottom: 1px solid rgba(255,255,255,0.08);
-    }
-
-    .track {
-      display: inline-flex;
-      align-items: center;
-      gap: 18px;
+    /* The scrolling belt (created once per row) */
+    .belt {
+      display: inline-flex; align-items: center; gap: 12px;
       will-change: transform;
-      animation: marquee linear infinite;
-      width: max-content;
     }
+    .content { display: inline-flex; align-items: center; gap: 12px; }
+    .sep { opacity: .35; }
 
-    .top .track { animation-duration: 70s; }
-    .bottom .track { animation-duration: 80s; }
+    /* Active / Past states */
+    @keyframes pulse{ 0%{opacity:1} 50%{opacity:.45} 100%{opacity:1} }
+    .active{ animation: pulse 1.1s ease-in-out infinite; color:#ffd166; font-weight:700; text-shadow:0 0 14px rgba(255,209,102,.18); }
+    .activeGlow{ text-shadow:0 0 18px rgba(255,209,102,.20), 0 0 34px rgba(255,209,102,.10); }
+    .live{ animation: pulse 1s ease-in-out infinite; color:#8be9fd; font-weight:800; text-shadow:0 0 16px rgba(139,233,253,.18); }
+    .past{ opacity:.35; filter:saturate(.9); }
 
-    @keyframes marquee {
-      from { transform: translateX(0); }
-      to   { transform: translateX(-50%); }
+    /* Badges */
+    .badge{
+      display:inline-block; margin-left:10px; padding:4px 10px; border-radius:999px;
+      font-size:.65em; letter-spacing:.6px; font-weight:800; vertical-align:middle;
+      background: rgba(255,209,102,.14); border:1px solid rgba(255,209,102,.22); text-transform:uppercase;
     }
+    .badge-live{ background:rgba(139,233,253,.14); border:1px solid rgba(139,233,253,.25); }
+    .active .badge, .live .badge{ opacity:1!important; }
 
-    .item {
-      display: inline-flex;
-      align-items: center;
-      gap: 10px;
-      font-size: clamp(16px, 2.6vw, 28px);
-      line-height: 1;
-      padding: 6px 8px;
-      border-radius: 10px;
-      color: rgba(255,255,255,0.92);
-      transition: opacity .25s ease, color .25s ease;
-    }
-
-    .sep {
-      opacity: 0.35;
-      margin: 0 4px;
-      user-select: none;
-    }
-
-    .past { opacity: 0.35; }
-
-    @keyframes pulse {
-      0% { opacity: 1; }
-      50% { opacity: 0.45; }
-      100% { opacity: 1; }
-    }
-
-    .active {
-      animation: pulse 1.2s ease-in-out infinite;
-      color: #ffd166;
-      font-weight: 700;
-    }
-
-    .badge {
-      display: none;
-      font-size: 16px;
-      letter-spacing: 1px;
-      padding: 6px 12px;
-      border-radius: 999px;
-      border: 1px solid rgba(255, 209, 102, 0.35);
-      background: rgba(255, 209, 102, 0.12);
-      color: #ffd166;
-      text-transform: uppercase;
-      font-weight: 800;
-      margin-left: 8px;
-    }
-
-    .active .badge { display: inline-block; }
-
-    /* Logo also scale a bit on small screens */
-    @media (max-width: 768px) {
-      .logo { width: 150px; top: 18px; left: 18px; }
-      .center { padding-bottom: 150px; }
-      .badge { font-size: 12px; padding: 5px 10px; }
-      .tickerRow { padding: 12px 14px; }
-    }
-
-    /* EXTRA FIX for phone landscape (width büyük, height küçük) */
-    @media (max-height: 520px) {
-      .center { padding-bottom: 140px; }
-      #date { margin-top: 10px; }
-    }
+    /* Marquee animation (duration set via inline style) */
+    @keyframes marqueeShift{ from{ transform: translateX(0); } to{ transform: translateX(-50%); } }
+    .ticker.marquee .belt{ animation: marqueeShift var(--dur, 22s) linear infinite; }
   </style>
 </head>
-
 <body>
+
   <img src="logo.png" class="logo" alt="Porto Bello Hotel" />
 
-  <div class="center">
-    <div id="clock"></div>
-    <div id="date"></div>
-  </div>
+  <div id="clock"></div>
+  <div id="date"></div>
 
-  <div class="tickerWrap">
-    <div class="tickerRow top">
-      <div class="track" id="trackTop"></div>
+  <div class="bottom">
+    <!-- Row 1 -->
+    <div id="row1" class="ticker">
+      <div class="belt">
+        <div class="content" id="r1">
+          <span id="breakfast">🍳 Breakfast 07:00–10:00</span><span class="sep">|</span>
+          <span id="lateBreakfast">🥐 Late Breakfast 10:00–10:30</span><span class="sep">|</span>
+          <span id="lunch">🍽️ Lunch 12:30–14:00</span><span class="sep">|</span>
+          <span id="snack">🍪 Snack 14:30–15:30</span>
+        </div>
+        <!-- clone is injected by JS if needed -->
+      </div>
     </div>
-    <div class="tickerRow bottom">
-      <div class="track" id="trackBottom"></div>
+
+    <!-- Row 2 -->
+    <div id="row2" class="ticker">
+      <div class="belt">
+        <div class="content" id="r2">
+          <span id="dinner">🍷 Dinner 18:30–21:00</span><span class="sep">|</span>
+          <span id="show">🎉 Animation Show 21:30</span><span class="sep">|</span>
+          <span id="lateSnack">🌙 Late Snack 23:00–06:00</span><span class="sep">|</span>
+          <span id="lobbyBar">🍸 Lobby Bar 08:30–00:00</span>
+        </div>
+        <!-- clone is injected by JS if needed -->
+      </div>
     </div>
   </div>
 
   <script>
-    const topBand = [
-      { key:"breakfast",      icon:"🍳", label:"Breakfast",      start:"07:00", end:"10:00", badge:"NOW OPEN", allowPastDim:true },
-      { key:"lateBreakfast",  icon:"🥐", label:"Late Breakfast", start:"10:00", end:"10:30", badge:"NOW OPEN", allowPastDim:true },
-      { key:"lunch",          icon:"🍽️", label:"Lunch",          start:"12:30", end:"14:00", badge:"NOW OPEN", allowPastDim:true },
-      { key:"snack",          icon:"🍪", label:"Snack",          start:"14:30", end:"15:30", badge:"NOW OPEN", allowPastDim:true },
-    ];
+    /* ---------- Time helpers ---------- */
+    const ids = ["breakfast","lateBreakfast","lunch","snack","dinner","show","lateSnack","lobbyBar"];
+    const toMin = (h,m)=>h*60+m;
+    const nowMin = d=>d.getHours()*60 + d.getMinutes();
+    const inRange = (n,s,e)=> s<e ? (n>=s && n<=e) : (s>e ? (n>=s || n<=e) : n===s);
+    const isPast  = (n,s,e)=> s<e ? (n>e) : ((n>e) && (n<s)); // overnight gap
 
-    const bottomBand = [
-      { key:"dinner",     icon:"🍷", label:"Dinner",         start:"18:30", end:"21:00", badge:"NOW OPEN", allowPastDim:true },
-      { key:"show",       icon:"🎉", label:"Animation Show", start:"21:30", end:"22:30", badge:"LIVE NOW", allowPastDim:true },
-      { key:"lateSnack",  icon:"🌙", label:"Late Snack",     start:"23:00", end:"06:00", badge:"NOW OPEN", allowPastDim:false },
-      { key:"lobbyBar",   icon:"🍸", label:"Lobby Bar",      start:"08:30", end:"00:00", badge:"NOW OPEN", allowPastDim:true },
-    ];
+    /* ---------- Schedule ---------- */
+    const schedule = {
+      breakfast:     {start:toMin(7,0),   end:toMin(10,0),  badge:"NOW OPEN", type:"food"},
+      lateBreakfast: {start:toMin(10,0),  end:toMin(10,30), badge:"NOW OPEN", type:"food"},
+      lunch:         {start:toMin(12,30), end:toMin(14,0),  badge:"NOW OPEN", type:"food"},
+      snack:         {start:toMin(14,30), end:toMin(15,30), badge:"NOW OPEN", type:"food"},
 
-    function toMin(hhmm) {
-      const [h,m] = hhmm.split(":").map(Number);
-      return (h * 60) + m;
+      dinner:        {start:toMin(18,30), end:toMin(21,0),  badge:"NOW OPEN", type:"food"},
+
+      // Show: 21:30–22:30 (kolayca değiştirilebilir)
+      show:          {start:toMin(21,30), end:toMin(22,30), badge:"LIVE NOW", type:"live"},
+
+      lateSnack:     {start:toMin(23,0),  end:toMin(6,0),   badge:"NOW OPEN", type:"food"}, // overnight
+      lobbyBar:      {start:toMin(8,30),  end:1440,        badge:"NOW OPEN", type:"food"}   // up to midnight
+    };
+
+    /* ---------- States & badges ---------- */
+    function clearStates(){
+      ids.forEach(id=>{
+        const el=document.getElementById(id);
+        el.classList.remove("active","activeGlow","live","past");
+        const b=el.querySelector(".badge"); if(b) b.remove();
+      });
+    }
+    function addBadge(el,text,isLive=false){
+      const b=document.createElement("span");
+      b.className="badge"+(isLive?" badge-live":"");
+      b.textContent=text; el.appendChild(b);
     }
 
-    function isActive(nowMin, startMin, endMin) {
-      if (endMin === 0) endMin = 1440;
-      if (endMin < startMin) return (nowMin >= startMin) || (nowMin < endMin);
-      return (nowMin >= startMin) && (nowMin < endMin);
-    }
+    function updateStates(d){
+      const n=nowMin(d);
+      clearStates();
+      Object.entries(schedule).forEach(([key,rule])=>{
+        const el=document.getElementById(key);
+        const active=inRange(n,rule.start,rule.end);
+        const past  =isPast(n,rule.start,rule.end);
 
-    function isPast(nowMin, startMin, endMin) {
-      if (endMin === 0) endMin = 1440;
-      if (endMin < startMin) return (nowMin >= endMin) && (nowMin < startMin);
-      return nowMin >= endMin;
-    }
-
-    function renderBand(trackEl, items) {
-      const seq = document.createElement("div");
-      seq.style.display = "inline-flex";
-      seq.style.alignItems = "center";
-
-      items.forEach((it, idx) => {
-        const span = document.createElement("span");
-        span.className = "item";
-        span.dataset.key = it.key;
-
-        const timeText = `${it.start}–${it.end}`;
-        span.innerHTML = `
-          <span class="txt">${it.icon} ${it.label} ${timeText}</span>
-          <span class="badge">${it.badge}</span>
-        `;
-        seq.appendChild(span);
-
-        if (idx !== items.length - 1) {
-          const sep = document.createElement("span");
-          sep.className = "sep";
-          sep.textContent = "|";
-          seq.appendChild(sep);
+        if(active){
+          if(rule.type==="live"){ el.classList.add("live","activeGlow"); addBadge(el,rule.badge,true); }
+          else{ el.classList.add("active","activeGlow"); addBadge(el,rule.badge,false); }
+        } else if (past){
+          el.classList.add("past");
         }
       });
-
-      const seq2 = seq.cloneNode(true);
-      trackEl.innerHTML = "";
-      trackEl.appendChild(seq);
-      trackEl.appendChild(seq2);
     }
 
-    function clearStates() {
-      document.querySelectorAll(".item").forEach(el => el.classList.remove("active", "past"));
+    /* ---------- Clock & date ---------- */
+    function tick(){
+      const d=new Date();
+      document.getElementById("clock").textContent = d.toLocaleTimeString("en-GB",{hour12:false});
+      document.getElementById("date").textContent  = d.toLocaleDateString("en-GB",{weekday:"long",day:"numeric",month:"long",year:"numeric"});
+      updateStates(d);
     }
 
-    function applyStateFor(items, nowMin) {
-      items.forEach(it => {
-        const startMin = toMin(it.start);
-        let endMin = toMin(it.end);
-        if (it.end === "00:00") endMin = 0;
+    /* ---------- Smart marquee (only if needed) ---------- */
+    function setupMarquee(rowId){
+      const row = document.getElementById(rowId);
+      const belt = row.querySelector(".belt");
+      const content = belt.querySelector(".content");
 
-        const active = isActive(nowMin, startMin, endMin);
-        const past = isPast(nowMin, startMin, endMin);
+      // Need marquee only if content is wider than the visible row
+      const needed = content.scrollWidth > row.clientWidth + 10;
+      if(!needed){ row.classList.remove("marquee"); const clone=belt.querySelector(".content.clone"); if(clone) clone.remove(); return; }
 
-        document.querySelectorAll(`.item[data-key="${it.key}"]`).forEach(el => {
-          if (active) {
-            el.classList.add("active");
-          } else {
-            if (it.allowPastDim && past) el.classList.add("past");
-          }
-        });
-      });
+      // Duplicate content for seamless scroll
+      if(!belt.querySelector(".content.clone")){
+        const clone = content.cloneNode(true); clone.classList.add("clone");
+        belt.appendChild(clone);
+      }
+
+      // Duration proportional to width (bigger text => longer loop)
+      const px = content.scrollWidth;
+      const dur = Math.max(22, Math.min(60, px/35)); // 22–60s arası
+      row.style.setProperty('--dur', dur+'s');
+      row.classList.add("marquee");
     }
 
-    function updateTime() {
-      const now = new Date();
-      const h = now.getHours();
-      const m = now.getMinutes();
-      const nowMin = (h * 60) + m;
-
-      document.getElementById("clock").textContent =
-        now.toLocaleTimeString("en-GB", { hour12: false });
-
-      document.getElementById("date").textContent =
-        now.toLocaleDateString("en-GB", {
-          weekday: "long",
-          day: "numeric",
-          month: "long",
-          year: "numeric"
-        });
-
-      clearStates();
-      applyStateFor(topBand, nowMin);
-      applyStateFor(bottomBand, nowMin);
+    function setupAllMarquees(){
+      setupMarquee("row1");
+      setupMarquee("row2");
     }
 
-    renderBand(document.getElementById("trackTop"), topBand);
-    renderBand(document.getElementById("trackBottom"), bottomBand);
+    /* ---------- Init ---------- */
+    tick(); setupAllMarquees();
+    // Refresh every second; re-evaluate marquee occasionally (örn. badge eklenince genişlik değişebilir)
+    setInterval(tick, 1000);
+    setInterval(setupAllMarquees, 4000);
 
-    updateTime();
-    setInterval(updateTime, 1000);
+    // Resize handling
+    window.addEventListener('resize', setupAllMarquees);
   </script>
 </body>
 </html>
