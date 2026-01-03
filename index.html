@@ -722,8 +722,8 @@ async function fetchWeather(){
     document.getElementById("wCond").textContent = wx.text;
 
     document.getElementById("wMain").textContent = `${t}°C`;
-    document.getElementById("wSub").textContent  = `Feels like ${feels}°C ~ Wind ${wind} km/h ${wdir}`;
-    document.getElementById("wSub2").textContent = `Humidity ${hum}% ~ Pressure ${pres} hPa`; 
+    document.getElementById("wSub").textContent  = `Feels like ${feels}°C • Wind ${wind} km/h ${wdir}`;
+    document.getElementById("wSub2").textContent = `Humidity ${hum}% • Pressure ${pres} hPa`; 
 
     setMode(effectModeFromWMO(c.weather_code, isDay));
   }catch(e){
