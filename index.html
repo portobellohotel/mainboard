@@ -457,7 +457,8 @@ document.getElementById("wCond").textContent = wx.text;
 document.getElementById("wMain").textContent = `${t}°C`;
 document.getElementById("wSub").textContent  = `Feels like ${feels}°C • Humidity ${hum}%`;
 document.getElementById("wSub2").textContent = `Wind ${wind} km/h ${wdir} • Pressure ${pres} hPa`;
-document.getElementById("wUpd").textContent  = `Updated ${fmtTimeOnly(new Date())}`;
+const upd = document.getElementById("wUpd");
+if (upd) upd.textContent = `Updated ${fmtTimeOnly(new Date())}`;
 }catch(e){
 document.getElementById("wCond").textContent = "Weather unavailable";
 document.getElementById("wUpd").textContent = "—";
