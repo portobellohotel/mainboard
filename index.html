@@ -161,15 +161,23 @@
     function updateStates(d){
       const n=nowMin(d);
       clearStates();
+
       Object.entries(schedule).forEach(([key,rule])=>{
         const el=document.getElementById(key);
         const active=inRange(n,rule.start,rule.end);
         const past  =isPast(n,rule.start,rule.end);
 
         if(active){
-          if(rule.type==="live"){ el.classList.add("live","activeGlow"); addBadge(el,rule.badge,true); }
-          else{ el.classList.add("active","activeGlow"); addBadge(el,rule.badge,false); }
-        } else if (past){
+          if(rule.type==="live"){
+            el.classList.add("live","activeGlow");
+            addBadge(el,rule.badge,true);
+          } else {
+            el.classList.add("active","activeGlow");
+            addBadge(el,rule.badge,false);
+          }
+        } else if (past && key !== "lateSnack") {
+          // ✅ SADECE BU DEĞİŞTİ:
+          // Late Snack asla "past" olmasın, hep beyaz kalsın.
           el.classList.add("past");
         }
       });
@@ -191,11 +199,17 @@
 
       // Need marquee only if content is wider than the visible row
       const needed = content.scrollWidth > row.clientWidth + 10;
-      if(!needed){ row.classList.remove("marquee"); const clone=belt.querySelector(".content.clone"); if(clone) clone.remove(); return; }
+      if(!needed){
+        row.classList.remove("marquee");
+        const clone=belt.querySelector(".content.clone");
+        if(clone) clone.remove();
+        return;
+      }
 
       // Duplicate content for seamless scroll
       if(!belt.querySelector(".content.clone")){
-        const clone = content.cloneNode(true); clone.classList.add("clone");
+        const clone = content.cloneNode(true);
+        clone.classList.add("clone");
         belt.appendChild(clone);
       }
 
@@ -213,11 +227,8 @@
 
     /* ---------- Init ---------- */
     tick(); setupAllMarquees();
-    // Refresh every second; re-evaluate marquee occasionally (örn. badge eklenince genişlik değişebilir)
     setInterval(tick, 1000);
     setInterval(setupAllMarquees, 4000);
-
-    // Resize handling
     window.addEventListener('resize', setupAllMarquees);
   </script>
 </body>
