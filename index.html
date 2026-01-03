@@ -66,7 +66,7 @@
       border-top: 1px solid rgba(255,255,255,0.08);
     }
 
-    /* ACTIVE – PULSE */
+    /* BLINK */
     @keyframes pulse {
       0% { opacity: 1; }
       50% { opacity: 0.4; }
@@ -79,9 +79,14 @@
       font-weight: 600;
     }
 
-    /* PAST – DIM */
     .past {
       opacity: 0.35;
+    }
+
+    .status {
+      font-size: 22px;
+      margin-left: 8px;
+      opacity: 0.9;
     }
   </style>
 </head>
@@ -94,26 +99,13 @@
   <div id="date"></div>
 
   <div id="ticker">
-    <span id="breakfast"></span> |
-    <span id="lunch"></span> |
-    <span id="dinner"></span> |
-    <span id="show"></span>
+    <span id="breakfast">🍳 Breakfast 07:00–10:00</span> |
+    <span id="lunch">🍽️ Lunch 12:30–17:00</span> |
+    <span id="dinner">🍷 Dinner 19:00–21:30</span> |
+    <span id="show">🎉 Animation Show 10:00</span>
   </div>
 
   <script>
-    // Base texts (no labels)
-    const BASE = {
-      breakfast: "🍳 Breakfast 07:00–10:00",
-      lunch:     "🍽️ Lunch 12:30–17:00",   // ✅ TEST END 17:00
-      dinner:    "🍷 Dinner 19:00–21:30",
-      show:      "🎉 Animation Show 21:00"
-    };
-
-    function setText(id, extra = "") {
-      const el = document.getElementById(id);
-      el.textContent = BASE[id] + (extra ? ` (${extra})` : "");
-    }
-
     function updateTime() {
       const now = new Date();
 
@@ -131,16 +123,20 @@
       updateStates(now);
     }
 
-    function clearClassesAndResetText() {
+    function clearStates() {
       ["breakfast","lunch","dinner","show"].forEach(id => {
         const el = document.getElementById(id);
         el.classList.remove("active","past");
-        setText(id);
+        el.innerHTML = el.innerHTML.replace(/<span.*?>.*?<\/span>/, "");
       });
     }
 
+    function setStatus(el, text) {
+      el.innerHTML += `<span class="status">(${text})</span>`;
+    }
+
     function updateStates(now) {
-      clearClassesAndResetText();
+      clearStates();
 
       const h = now.getHours();
       const m = now.getMinutes();
@@ -150,59 +146,38 @@
       const dinner = document.getElementById("dinner");
       const show = document.getElementById("show");
 
-      // Breakfast 07:00–10:00
-      if (h < 7) {
-        // future
-      } else if (h >= 7 && h < 10) {
+      /* BREAKFAST 07:00–10:00 */
+      if (h >= 7 && h < 10) {
         breakfast.classList.add("active");
-        setText("breakfast", "Now Open");
-      } else {
+        setStatus(breakfast, "Now Open");
+      } else if (h >= 10) {
         breakfast.classList.add("past");
       }
 
-      // Lunch 12:30–17:00 ✅ TEST
-      if (h < 12 || (h === 12 && m < 30)) {
-        // future
-      } else if (
-        (h === 12 && m >= 30) ||
-        h === 13 ||
-        h === 14 ||
-        h === 15 ||
-        h === 16 ||
-        (h === 17 && m === 0)
-      ) {
+      /* LUNCH 12:30–17:00 */
+      if ((h === 12 && m >= 30) || (h > 12 && h < 17)) {
         lunch.classList.add("active");
-        setText("lunch", "Now Open");
-      } else if (h > 17 || (h === 17 && m > 0)) {
+        setStatus(lunch, "Now Open");
+      } else if (h >= 17) {
         lunch.classList.add("past");
       }
 
-      // Dinner 19:00–21:30
-      if (h < 19) {
-        // future
-      } else if (h >= 19 && (h < 21 || (h === 21 && m <= 30))) {
+      /* DINNER 19:00–21:30 */
+      if (h >= 19 && (h < 21 || (h === 21 && m <= 30))) {
         dinner.classList.add("active");
-        setText("dinner", "Now Open");
+        setStatus(dinner, "Now Open");
       } else if (h > 21 || (h === 21 && m > 30)) {
         dinner.classList.add("past");
       }
 
-      // Animation Show 20:50–21:10
-      if (h < 20 || (h === 20 && m < 50)) {
-        // future
-      } else if ((h === 20 && m >= 50) || (h === 21 && m <= 10)) {
+      /* ANIMATION SHOW TEST 09:50–10:10 */
+      if ((h === 9 && m >= 50) || (h === 10 && m <= 10)) {
         show.classList.add("active");
-        setText("show", "Live Now");
-      } else if (h > 21 || (h === 21 && m > 10)) {
+        setStatus(show, "Live Now");
+      } else if (h > 10 || (h === 10 && m > 10)) {
         show.classList.add("past");
       }
     }
-
-    // init texts once
-    setText("breakfast");
-    setText("lunch");
-    setText("dinner");
-    setText("show");
 
     updateTime();
     setInterval(updateTime, 1000);
