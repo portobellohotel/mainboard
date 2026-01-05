@@ -693,14 +693,14 @@ async function fetchWeather(){
     const sunset  = fmtTimeFromISO(sunsetISO);
     const sunEl = document.getElementById("wSun");
     if(sunEl){
-      sunEl.textContent = `🌅 Sunrise ${sunrise} • 🌇 Sunset ${sunset}`;
+      sunEl.textContent = `🌅 Sunrise ${sunrise} b•b 🌇 Sunset ${sunset}`;
     }
 
     setMode(effectModeFromWMO(c.weather_code, isDay));
   }catch(e){
     document.getElementById("wCond").textContent = "Weather unavailable";
     const sunEl = document.getElementById("wSun");
-    if(sunEl) sunEl.textContent = "🌅 Sunrise --:-- • 🌇 Sunset --:--";
+    if(sunEl) sunEl.textContent = "🌅 Sunrise --:-- c•c 🌇 Sunset --:--";
     setMode("none");
   }
 }
