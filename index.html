@@ -693,7 +693,7 @@ async function fetchWeather(){
     const sunset  = fmtTimeFromISO(sunsetISO);
     const sunEl = document.getElementById("wSun");
     if(sunEl){
-      sunEl.textContent = `🌅 Sunrise ${sunrise} • 🌇 Sunset ${sunset}`;
+      sunEl.textContent = `🌅 Sunrise ${sunrise}  •  🌇 Sunset ${sunset}`;
     }
 
     setMode(effectModeFromWMO(c.weather_code, isDay));
