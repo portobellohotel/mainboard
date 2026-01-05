@@ -348,7 +348,7 @@ body.mode-sunny #sunFlare{ opacity: 1; }
   <div class="sub2" id="wSub2">Wind -- km/h -- • Pressure ---- hPa</div>
 
   <!-- ✅ NEW: sunrise / sunset -->
-  <div class="sub3" id="wSun">🌅 Sunrise --:--  •  🌇 Sunset --:--</div>
+  <div class="sub3" id="wSun">🌅 Sunrise --:-- • 🌇 Sunset --:--</div>
 </div>
 
 <div id="clock"></div>
@@ -693,14 +693,14 @@ async function fetchWeather(){
     const sunset  = fmtTimeFromISO(sunsetISO);
     const sunEl = document.getElementById("wSun");
     if(sunEl){
-      sunEl.textContent = `🌅 Sunrise ${sunrise}  •  🌇 Sunset ${sunset}`;
+      sunEl.textContent = `🌅 Sunrise ${sunrise} • 🌇 Sunset ${sunset}`;
     }
 
     setMode(effectModeFromWMO(c.weather_code, isDay));
   }catch(e){
     document.getElementById("wCond").textContent = "Weather unavailable";
     const sunEl = document.getElementById("wSun");
-    if(sunEl) sunEl.textContent = "🌅 Sunrise --:--  •  🌇 Sunset --:--";
+    if(sunEl) sunEl.textContent = "🌅 Sunrise --:-- • 🌇 Sunset --:--";
     setMode("none");
   }
 }
