@@ -2,13 +2,13 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8" />
-<title>Porto Bello Hotel | Info Board</title>
+<title>Porto Bello Hotel | Main Board</title>
 <meta name="viewport" content="width=device-width, initial-scale=1" />
 
-<!-- ✅ Premium Greeting Font: Playfair Display -->
+<!-- ✅ Premium Script Font (Allura) -->
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;500;600&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Allura&display=swap" rel="stylesheet">
 
 <style>
 :root{
@@ -20,7 +20,7 @@
   --ticker-pad: 28px;  /* 22-40 arası oyna: büyüdükçe ikonlar daha görünür */
 
   /* ✅ Greeting Font */
-  --greet-font: "Playfair Display", serif;
+  --greet-font: "Allura", cursive;
 }
 
 html, body {
@@ -237,7 +237,7 @@ body.mode-sunny #sunFlare{ opacity: 1; }
   .weather{ --w-scale: 1.55; max-width: 92vw; right: 14px; top: 14px; }
 }
 
-/* ✅ Center stack for greeting + clock + date */
+/* ✅ Center Stack */
 .centerStack{
   position: relative;
   z-index: 4;
@@ -247,36 +247,33 @@ body.mode-sunny #sunFlare{ opacity: 1; }
   justify-content: center;
 }
 
-/* ✅ Premium Greeting (Playfair + 0.02em spacing) */
+/* ✅ Greeting (Allura) */
 #greeting{
   font-family: var(--greet-font);
-  font-size: clamp(22px, 2.5vw, 40px);
-  font-weight: 500;
-  letter-spacing: 0.02em;   /* ✅ istediğin değer */
+  font-size: clamp(38px, 3.6vw, 64px);
+  font-weight: 400;
+  letter-spacing: 0; /* ✅ Script font için en şık */
   opacity: .92;
-  margin-bottom: 12px;
+  margin-bottom: 8px;
   text-align: center;
-  text-shadow: 0 2px 14px rgba(0,0,0,.35), 0 0 22px rgba(0,0,0,.20);
-  transform: translateY(0);
+  text-shadow: 0 2px 18px rgba(0,0,0,.38), 0 0 26px rgba(0,0,0,.22);
+  filter: drop-shadow(0 1px 0 rgba(255,255,255,.06));
   transition: opacity 350ms ease, transform 350ms ease;
   user-select: none;
 }
-
-/* ✅ Divider line (kalsın demiştin) */
+#greeting.swap{
+  opacity: 0;
+  transform: translateY(-6px);
+}
+/* ✅ Divider line kalsın */
 #greeting::after{
   content:"";
   display:block;
   width: clamp(160px, 18vw, 260px);
   height: 1px;
-  margin: 12px auto 0;
+  margin: 10px auto 0;
   background: rgba(255,255,255,.85);
   opacity: .18;
-}
-
-/* soft fade swap */
-#greeting.swap{
-  opacity: 0;
-  transform: translateY(-6px);
 }
 
 /* CLOCK + DATE */
@@ -492,7 +489,7 @@ function updateStates(d){
   });
 }
 
-/* ---------- Premium Greeting (4 time ranges) ---------- */
+/* ---------- Greeting (4 time ranges) ---------- */
 let _lastGreeting = "";
 function greetingForHour(h){
   if (h >= 5 && h < 12) return "Good morning";
@@ -503,7 +500,6 @@ function greetingForHour(h){
 function updateGreeting(d){
   const el = document.getElementById("greeting");
   if(!el) return;
-
   const next = greetingForHour(d.getHours());
   if (next === _lastGreeting) return;
 
@@ -523,7 +519,6 @@ function tick(){
     d.toLocaleTimeString("en-GB",{hour12:false});
   document.getElementById("date").textContent  =
     d.toLocaleDateString("en-GB",{weekday:"long",day:"numeric",month:"long",year:"numeric"});
-
   updateGreeting(d);
   updateStates(d);
 }
