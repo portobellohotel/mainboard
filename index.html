@@ -4,6 +4,12 @@
 <meta charset="UTF-8" />
 <title>Porto Bello Hotel | Main Board</title>
 <meta name="viewport" content="width=device-width, initial-scale=1" />
+
+<!-- ✅ Premium font for greeting -->
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@400;500;600&display=swap" rel="stylesheet">
+
 <style>
 :root{
   --row-gap:10px;
@@ -12,6 +18,9 @@
 
   /* ✅ EN PRATİK ÇÖZÜM: ticker iç boşluk (sol/sağ) */
   --ticker-pad: 28px;  /* 22-40 arası oyna: büyüdükçe ikonlar daha görünür */
+
+  /* ✅ Greeting font */
+  --greet-font: "Cormorant Garamond", serif;
 }
 
 html, body {
@@ -228,6 +237,48 @@ body.mode-sunny #sunFlare{ opacity: 1; }
   .weather{ --w-scale: 1.55; max-width: 92vw; right: 14px; top: 14px; }
 }
 
+/* ✅ Center stack for greeting + clock + date */
+.centerStack{
+  position: relative;
+  z-index: 4;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+}
+
+/* ✅ Premium Greeting */
+#greeting{
+  font-family: var(--greet-font);
+  font-size: clamp(22px, 2.6vw, 42px);
+  font-weight: 600;
+  letter-spacing: 0.08em;
+  opacity: .92;
+  margin-bottom: 10px;
+  text-align: center;
+  text-shadow: 0 2px 14px rgba(0,0,0,.35), 0 0 22px rgba(0,0,0,.25);
+  transform: translateY(0);
+  transition: opacity 350ms ease, transform 350ms ease;
+  user-select: none;
+}
+
+/* subtle divider line (premium touch) */
+#greeting::after{
+  content:"";
+  display:block;
+  width: clamp(160px, 18vw, 260px);
+  height: 1px;
+  margin: 12px auto 0;
+  background: rgba(255,255,255,.85);
+  opacity: .18;
+}
+
+/* fade swap */
+#greeting.swap{
+  opacity: 0;
+  transform: translateY(-6px);
+}
+
 /* CLOCK + DATE */
 #clock {
   font-size: clamp(72px, 9vw, 120px);
@@ -351,8 +402,12 @@ body.mode-sunny #sunFlare{ opacity: 1; }
   <div class="sub3" id="wSun">🌅 Sunrise --:-- • 🌇 Sunset --:--</div>
 </div>
 
-<div id="clock"></div>
-<div id="date"></div>
+<!-- ✅ Greeting + Clock + Date (Premium stack) -->
+<div class="centerStack">
+  <div id="greeting">Welcome</div>
+  <div id="clock"></div>
+  <div id="date"></div>
+</div>
 
 <div class="bottom">
   <div id="row1" class="ticker">
@@ -437,13 +492,46 @@ function updateStates(d){
   });
 }
 
+/* ---------- Premium Greeting (4 time ranges) ---------- */
+let _lastGreeting = "";
+function greetingForHour(h){
+  // 05:00–11:59
+  if (h >= 5 && h < 12) return "Good morning";
+  // 12:00–17:59
+  if (h >= 12 && h < 18) return "Good afternoon";
+  // 18:00–22:59
+  if (h >= 18 && h < 23) return "Good evening";
+  // 23:00–04:59
+  return "Good night";
+}
+function updateGreeting(d){
+  const el = document.getElementById("greeting");
+  if(!el) return;
+
+  const next = greetingForHour(d.getHours());
+  if (next === _lastGreeting) return;
+
+  // premium soft transition
+  el.classList.add("swap");
+  setTimeout(()=>{
+    el.textContent = next;
+    el.classList.remove("swap");
+  }, 220);
+
+  _lastGreeting = next;
+}
+
 /* ---------- Clock & date ---------- */
 function tick(){
   const d=new Date();
+
   document.getElementById("clock").textContent =
     d.toLocaleTimeString("en-GB",{hour12:false});
+
   document.getElementById("date").textContent  =
     d.toLocaleDateString("en-GB",{weekday:"long",day:"numeric",month:"long",year:"numeric"});
+
+  updateGreeting(d);
   updateStates(d);
 }
 
